@@ -101,10 +101,7 @@ class World:
     def add_critter(self, state: CritterState) -> None:
         """Add a critter to the world."""
         self.critters[state.id] = state
-        pos = state.position.as_tuple()
-        if pos not in self._position_index:
-            self._position_index[pos] = []
-        self._position_index[pos].append(state.id)
+        self._position_index.setdefault(state.position.as_tuple(), []).append(state.id)
 
     def remove_critter(self, critter_id: str) -> None:
         """Remove a critter from the world."""
@@ -137,9 +134,7 @@ class World:
             if not self._position_index[old_pos]:
                 del self._position_index[old_pos]
 
-        if new_pos not in self._position_index:
-            self._position_index[new_pos] = []
-        self._position_index[new_pos].append(critter_id)
+        self._position_index.setdefault(new_pos, []).append(critter_id)
 
         # Update critter state
         state.position = new_position

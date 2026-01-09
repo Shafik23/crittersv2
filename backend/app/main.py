@@ -7,7 +7,6 @@ Main entry point for the backend API.
 import asyncio
 from contextlib import asynccontextmanager
 from typing import Dict, List, Set
-import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware

@@ -17,9 +17,6 @@ class CrittersApp {
         // State
         this.isRunning = false;
         this.hasGame = false;
-
-        // Species colors for legend
-        this.speciesColors = {};
     }
 
     async init() {
@@ -247,6 +244,16 @@ class CrittersApp {
         document.body.appendChild(announcement);
     }
 
+    getSpeciesColors(critters) {
+        const colors = {};
+        for (const critter of critters) {
+            if (!colors[critter.owner]) {
+                colors[critter.owner] = critter.color;
+            }
+        }
+        return colors;
+    }
+
     updateScoreboard(scores, critters) {
         const scoreboard = document.getElementById('scoreboard');
 
@@ -255,21 +262,12 @@ class CrittersApp {
             return;
         }
 
-        // Get colors for each species
-        const speciesColors = {};
-        for (const critter of critters) {
-            if (!speciesColors[critter.owner]) {
-                speciesColors[critter.owner] = critter.color;
-            }
-        }
-
-        // Sort by score
+        const speciesColors = this.getSpeciesColors(critters);
         const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
 
-        let html = '';
-        for (const [species, score] of sortedScores) {
+        const html = sortedScores.map(([species, score]) => {
             const color = speciesColors[species] || '#888';
-            html += `
+            return `
                 <div class="score-row">
                     <div class="score-species">
                         <span class="score-color" style="background: ${color};"></span>
@@ -278,21 +276,14 @@ class CrittersApp {
                     <span class="score-value">${score}</span>
                 </div>
             `;
-        }
+        }).join('');
 
         scoreboard.innerHTML = html;
     }
 
     updateLegend(critters) {
         const legend = document.getElementById('legend');
-
-        // Get unique species with colors
-        const species = {};
-        for (const critter of critters) {
-            if (!species[critter.owner]) {
-                species[critter.owner] = critter.color;
-            }
-        }
+        const speciesColors = this.getSpeciesColors(critters);
 
         let html = `
             <div class="legend-item">
@@ -301,7 +292,7 @@ class CrittersApp {
             </div>
         `;
 
-        for (const [name, color] of Object.entries(species)) {
+        for (const [name, color] of Object.entries(speciesColors)) {
             html += `
                 <div class="legend-item">
                     <span class="legend-color" style="background: ${color};"></span>

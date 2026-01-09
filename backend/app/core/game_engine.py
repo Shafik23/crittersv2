@@ -205,25 +205,16 @@ class GameEngine:
                 moves[critter_id] = Direction.CENTER
                 continue
 
+            instance = self.critter_instances.get(critter_id)
+            if instance is None:
+                moves[critter_id] = Direction.CENTER
+                continue
+
             try:
-                instance = self.critter_instances.get(critter_id)
-                if instance is None:
-                    moves[critter_id] = Direction.CENTER
-                    continue
-
-                # Create info for this critter
                 info = self.world.create_critter_info(critter_id)
-
-                # Get move (with implicit timeout via game loop rate)
                 move = instance.get_move(info)
-
-                if isinstance(move, Direction):
-                    moves[critter_id] = move
-                else:
-                    moves[critter_id] = Direction.CENTER
-
+                moves[critter_id] = move if isinstance(move, Direction) else Direction.CENTER
             except Exception as e:
-                # Critter code failed - stay in place
                 print(f"Error in {state.species}.get_move(): {e}")
                 moves[critter_id] = Direction.CENTER
 
@@ -259,10 +250,7 @@ class GameEngine:
             self.world.move_critter(critter_id, new_pos)
 
             # Track for collision detection
-            pos_tuple = new_pos.as_tuple()
-            if pos_tuple not in final_positions:
-                final_positions[pos_tuple] = []
-            final_positions[pos_tuple].append(critter_id)
+            final_positions.setdefault(new_pos.as_tuple(), []).append(critter_id)
 
         return final_positions
 
@@ -282,9 +270,7 @@ class GameEngine:
                 state = self.world.critters.get(cid)
                 if state and state.is_alive:
                     key = f"{state.owner}:{state.species}"
-                    if key not in species_groups:
-                        species_groups[key] = []
-                    species_groups[key].append(cid)
+                    species_groups.setdefault(key, []).append(cid)
 
             # If only one species, no fight
             if len(species_groups) <= 1:
@@ -360,25 +346,18 @@ class GameEngine:
                 loser_id=id2,
             )
 
-        # Get attacks
-        attack1 = Attack.SCRATCH  # Default
-        attack2 = Attack.SCRATCH
+        # Get attacks from each critter
+        def get_attack(attacker, defender) -> Attack:
+            if not attacker or not defender:
+                return Attack.SCRATCH
+            try:
+                attack = attacker.fight(str(defender))
+                return attack if isinstance(attack, Attack) else Attack.SCRATCH
+            except Exception:
+                return Attack.SCRATCH
 
-        try:
-            if instance1 and instance2:
-                attack1 = instance1.fight(str(instance2))
-                if not isinstance(attack1, Attack):
-                    attack1 = Attack.SCRATCH
-        except Exception:
-            pass
-
-        try:
-            if instance2 and instance1:
-                attack2 = instance2.fight(str(instance1))
-                if not isinstance(attack2, Attack):
-                    attack2 = Attack.SCRATCH
-        except Exception:
-            pass
+        attack1 = get_attack(instance1, instance2)
+        attack2 = get_attack(instance2, instance1)
 
         # Determine winner
         if self.BEATS[attack1] == attack2:
@@ -459,25 +438,18 @@ class GameEngine:
             if not state.is_alive:
                 continue
 
-            owner = state.owner
-            if owner not in scores:
-                scores[owner] = 0
-
             # Score = alive (1) + food eaten + kills * 2
-            scores[owner] += 1 + state.food_eaten + (state.fights_won * 2)
+            scores[state.owner] = scores.get(state.owner, 0) + 1 + state.food_eaten + (state.fights_won * 2)
 
         return scores
 
     def get_winner(self) -> Optional[str]:
         """Check if there's a winner (only one species alive)."""
-        alive_owners = set()
-        for state in self.world.critters.values():
-            if state.is_alive:
-                alive_owners.add(state.owner)
+        alive_owners = {state.owner for state in self.world.critters.values() if state.is_alive}
 
         if len(alive_owners) == 1:
-            return list(alive_owners)[0]
-        elif len(alive_owners) == 0:
+            return next(iter(alive_owners))
+        if len(alive_owners) == 0:
             return "DRAW"
         return None
 
