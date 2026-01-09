@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Critters v2</title>
+    <link rel="stylesheet" href="/static/styles/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Critters v2</h1>
+            <p class="subtitle">The classic CS education game - online edition</p>
+        </header>
+
+        <div class="main-content">
+            <div class="game-container">
+                <canvas id="game-canvas" width="720" height="600"></canvas>
+                <div class="game-overlay" id="game-overlay">
+                    <div class="overlay-content">
+                        <h2>Welcome to Critters!</h2>
+                        <p>Create a new game to start</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="panel controls-panel">
+                    <h3>Game Controls</h3>
+
+                    <div class="form-group">
+                        <label>Select Species:</label>
+                        <div class="species-selector" id="species-selector">
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="Ant" checked> Ant
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="Bird" checked> Bird
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="Hippo"> Hippo
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" value="Stone"> Stone
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="critters-count">Critters per species:</label>
+                        <input type="number" id="critters-count" value="25" min="1" max="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="speed-slider">Speed:</label>
+                        <input type="range" id="speed-slider" min="1" max="20" value="10">
+                        <span id="speed-display">10 turns/sec</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="new-game-btn" class="btn btn-primary">New Game</button>
+                        <button id="start-btn" class="btn btn-success" disabled>Start</button>
+                        <button id="pause-btn" class="btn btn-warning" disabled>Pause</button>
+                        <button id="step-btn" class="btn btn-secondary" disabled>Step</button>
+                    </div>
+                </div>
+
+                <div class="panel scoreboard-panel">
+                    <h3>Scoreboard</h3>
+                    <div id="scoreboard">
+                        <p class="no-game">No game in progress</p>
+                    </div>
+                </div>
+
+                <div class="panel stats-panel">
+                    <h3>Game Stats</h3>
+                    <div id="game-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Turn:</span>
+                            <span class="stat-value" id="turn-number">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Status:</span>
+                            <span class="stat-value" id="game-status">Not started</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Critters alive:</span>
+                            <span class="stat-value" id="critters-alive">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel legend-panel">
+                    <h3>Legend</h3>
+                    <div id="legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #4CAF50;"></span>
+                            <span>Food</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Critters v2 - Created by Stuart Reges & Marty Stepp</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/game/GameRenderer.js"></script>
+    <script src="/static/js/network/WebSocketClient.js"></script>
+    <script src="/static/js/network/APIClient.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
