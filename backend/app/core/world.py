@@ -80,6 +80,7 @@ class World:
     - Edges wrap around (toroidal topology)
     """
 
+    # Fallback defaults (actual values come from GameConfig in main.py)
     DEFAULT_WIDTH = 60
     DEFAULT_HEIGHT = 50
     FOOD_SPAWN_RATE = 0.01  # Probability per empty cell per turn

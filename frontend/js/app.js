@@ -139,10 +139,8 @@ class CrittersApp {
         const turnDelay = 1 / turnsPerSec;
 
         try {
+            // Let backend use its GAME_SIZE-based defaults for width/height/critters
             const result = await this.apiClient.newGame({
-                width: 60,
-                height: 50,
-                critters_per_species: crittersCount,
                 turn_delay: turnDelay,
                 species: species,
             });

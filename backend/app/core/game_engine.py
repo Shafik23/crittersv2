@@ -133,10 +133,8 @@ class GameEngine:
             except Exception:
                 color = "gray"
 
-            try:
-                display = str(instance)
-            except Exception:
-                display = "?"
+            # Use first letter of species as display character
+            display = species[0].upper() if species else "?"
 
             # Create state
             state = CritterState(
@@ -425,10 +423,8 @@ class GameEngine:
             except Exception:
                 pass
 
-            try:
-                state.display = str(instance)
-            except Exception:
-                pass
+            # Use first letter of species as display character
+            state.display = state.species[0].upper() if state.species else "?"
 
     def _calculate_scores(self) -> Dict[str, int]:
         """Calculate scores for each owner."""

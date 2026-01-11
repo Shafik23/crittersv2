@@ -1,17 +1,30 @@
 /**
  * GameRenderer - Canvas-based rendering for the Critters game
+ *
+ * Canvas size is determined by the backend game state.
  */
+
+const CELL_SIZE = 24; // Fixed cell size to maintain zoom level
+
 class GameRenderer {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
-        // World dimensions (will be updated when game starts)
+        // World dimensions (set by backend when game starts)
         this.worldWidth = 60;
         this.worldHeight = 50;
 
-        // Calculate cell size to fit canvas
-        this.updateCellSize();
+        // Fixed cell size for consistent zoom
+        this.cellSize = CELL_SIZE;
+
+        // Canvas size will be set when we receive game state from backend
+        this.canvas.width = this.worldWidth * this.cellSize;
+        this.canvas.height = this.worldHeight * this.cellSize;
+
+        // Center offset (0 since canvas matches grid exactly)
+        this.offsetX = 0;
+        this.offsetY = 0;
 
         // Visual settings
         this.gridLineColor = '#1a4f7a';
@@ -33,21 +46,12 @@ class GameRenderer {
         requestAnimationFrame((t) => this.renderLoop(t));
     }
 
-    updateCellSize() {
-        this.cellSize = Math.min(
-            Math.floor(this.canvas.width / this.worldWidth),
-            Math.floor(this.canvas.height / this.worldHeight)
-        );
-
-        // Center the grid
-        this.offsetX = Math.floor((this.canvas.width - this.worldWidth * this.cellSize) / 2);
-        this.offsetY = Math.floor((this.canvas.height - this.worldHeight * this.cellSize) / 2);
-    }
-
     setWorldSize(width, height) {
         this.worldWidth = width;
         this.worldHeight = height;
-        this.updateCellSize();
+        // Update canvas size to maintain fixed cell size
+        this.canvas.width = this.worldWidth * this.cellSize;
+        this.canvas.height = this.worldHeight * this.cellSize;
     }
 
     renderLoop(timestamp) {

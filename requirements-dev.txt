@@ -1,0 +1,5 @@
+# Development dependencies
+-r backend/requirements.txt
+
+# Live reload for frontend development
+livereload>=2.6.0

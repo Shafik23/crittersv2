@@ -11,7 +11,7 @@ from typing import Dict, List, Set
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
 from .core import World, GameEngine
@@ -22,6 +22,17 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from sample_critters import Ant, Bird, Hippo, Stone
+
+
+# Game size multiplier - controls grid dimensions
+# 1.0 = 30x25 grid, 2.0 = 60x50 grid, etc.
+GAME_SIZE = 1.5
+
+# Base dimensions (multiplied by GAME_SIZE)
+BASE_WIDTH = 30
+BASE_HEIGHT = 25
+BASE_CRITTERS_PER_SPECIES = 15
+BASE_FOOD_COUNT = 25
 
 
 # Game state
@@ -66,9 +77,9 @@ app.add_middleware(
 
 # Request/Response models
 class GameConfig(BaseModel):
-    width: int = 60
-    height: int = 50
-    critters_per_species: int = 25
+    width: int = int(BASE_WIDTH * GAME_SIZE)
+    height: int = int(BASE_HEIGHT * GAME_SIZE)
+    critters_per_species: int = int(BASE_CRITTERS_PER_SPECIES * GAME_SIZE)
     turn_delay: float = 0.2
     species: List[str] = ["Ant", "Bird"]
 
@@ -122,8 +133,8 @@ async def new_game(config: GameConfig):
     game_state.engine = GameEngine(game_state.world)
     game_state.turn_delay = config.turn_delay
 
-    # Add initial food
-    game_state.world.spawn_random_food(50)
+    # Add initial food (scaled by game size)
+    game_state.world.spawn_random_food(int(BASE_FOOD_COUNT * GAME_SIZE))
 
     # Add critters for each species
     for species_name in config.species:
@@ -305,10 +316,23 @@ async def run_game_loop():
 
 # Serve frontend static files (if available)
 frontend_path = os.path.join(os.path.dirname(__file__), '..', '..', 'frontend')
+DEV_MODE = os.environ.get('CRITTERS_DEV_MODE') == '1'
+
 if os.path.exists(frontend_path):
     @app.get("/game")
     async def serve_frontend():
-        return FileResponse(os.path.join(frontend_path, 'index.html'))
+        html_path = os.path.join(frontend_path, 'index.html')
+
+        if DEV_MODE:
+            # Inject livereload script for hot-reload in development
+            with open(html_path, 'r') as f:
+                html_content = f.read()
+
+            livereload_script = '<script src="http://localhost:35729/livereload.js"></script>'
+            html_content = html_content.replace('</body>', f'{livereload_script}\n</body>')
+            return HTMLResponse(content=html_content)
+
+        return FileResponse(html_path)
 
     app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
